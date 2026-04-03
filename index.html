@@ -2413,6 +2413,27 @@ html, body {
           <span class="acct-chevron">›</span>
         </div>
 
+        <div class="acct-row" onclick="copyShareCode()">
+          <div class="acct-icon" style="background:rgba(108,99,255,0.12);">🔗</div>
+          <div class="acct-info">
+            <div class="acct-title">Cross-device sync</div>
+            <div class="acct-sub" id="sync-room-label">Loading…</div>
+          </div>
+          <span class="acct-chevron">›</span>
+        </div>
+        <div style="padding:10px 18px 14px;background:var(--surface2);border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">To sync a new device, share your room code with it:</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div id="sync-code-display" style="font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:3px;color:var(--accent-bright);">------</div>
+            <button class="btn btn-sm btn-primary" onclick="copyShareCode()">Copy code</button>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:10px;margin-bottom:6px;">On the other device, paste the code here:</div>
+          <div style="display:flex;gap:8px;">
+            <input id="join-room-input" type="text" placeholder="Paste code…" style="flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--mono);font-size:14px;letter-spacing:2px;text-transform:uppercase;"/>
+            <button class="btn btn-primary btn-sm" onclick="joinRoom(document.getElementById('join-room-input').value)">Join</button>
+          </div>
+        </div>
+
         <div class="acct-row" onclick="shareApp()">
           <div class="acct-icon" style="background:rgba(108,99,255,0.08);">↗</div>
           <div class="acct-info">
@@ -3170,6 +3191,7 @@ function toggleTimer(){
     syncUnlockMethodBtn();
     updateSessionWarnings();
     updateHomeDashboard();
+    if(typeof partyOnSessionStart==='function') partyOnSessionStart();
     if(isOpenEnded){
       document.getElementById('open-arc').classList.add('spinning');
       // Show dedicated stop button, fade pills
@@ -3179,7 +3201,7 @@ function toggleTimer(){
       timerIv=setInterval(()=>{elapsedSec++;updateDisplay();syncBnStartBtn();updateHomeDashboard();},1000);
     } else {
       timerIv=setInterval(()=>{
-        remSec--;updateDisplay();syncBnStartBtn();
+        remSec--;updateDisplay();syncBnStartBtn();if(typeof partyOnTick==='function')partyOnTick();
         if(remSec<=0){
           clearInterval(timerIv);timerRunning=false;remSec=0;
           const _pbMD=document.getElementById('play-btn-main');if(_pbMD)_pbMD.textContent='Done!';
@@ -3830,6 +3852,7 @@ function unlockSuccess(){
   updateSessionWarnings();
   updateHomeDashboard();
   if(typeof syncBnStartBtn==='function') syncBnStartBtn();
+  if(typeof partyOnSessionStop==='function') partyOnSessionStop(isOpenEnded?elapsedSec:totalSec-remSec);
   if(wasOpenEnded){
     resetTimer();
     setTimeout(openExitRitual, 300);
@@ -5222,6 +5245,10 @@ function buildAccountPage(){
   set('acct-total-time',totalMins>=60?Math.round(totalMins/60)+'h':totalMins+'m');
   const sub=document.getElementById('acct-unlock-sub');
   if(sub) sub.textContent=currentUnlock||'Mental maths';
+  const roomLabel=document.getElementById('sync-room-label');
+  if(roomLabel) roomLabel.textContent='Active · tap to copy your room code';
+  const codeDisplay=document.getElementById('sync-code-display');
+  if(codeDisplay) codeDisplay.textContent=getShareCode();
 }
 
 // ── Profile ──
@@ -6170,6 +6197,215 @@ function buildSessionsPage(){
       +'</div>'+rows;
   }).join('');
 }
+
+// ══════════════════════════════════════════
+// ── PARTYKIT REAL-TIME SYNC ──
+// ══════════════════════════════════════════
+
+// Replace with your deployed PartyKit URL after running: partykit deploy
+const PARTY_HOST = 'nousflow.mattcappello1-arch.partykit.dev';
+
+let _partySocket = null;
+let _deviceId = localStorage.getItem('ff-device-id');
+if (!_deviceId) {
+  _deviceId = 'dev_' + Math.random().toString(36).slice(2, 10);
+  localStorage.setItem('ff-device-id', _deviceId);
+}
+
+// Room ID — fixed per installation, shown as a short code users can share
+function getPartyRoomId() {
+  let rid = localStorage.getItem('ff-room-id');
+  if (!rid) {
+    rid = 'room_' + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem('ff-room-id', rid);
+  }
+  return rid;
+}
+
+function partyConnect() {
+  if (_partySocket && _partySocket.readyState < 2) return; // already open/connecting
+  try {
+    const url = 'wss://' + PARTY_HOST + '/parties/main/' + getPartyRoomId();
+    _partySocket = new WebSocket(url);
+
+    _partySocket.onopen = function() {
+      console.log('[Nousflow] Synced to room:', getPartyRoomId());
+      showToast('🔗 Cross-device sync active');
+      // Ask for current state
+      partySend({ type: 'sync_request', deviceId: _deviceId });
+    };
+
+    _partySocket.onmessage = function(e) {
+      try {
+        const msg = JSON.parse(e.data);
+        partyHandleMessage(msg);
+      } catch(err) {}
+    };
+
+    _partySocket.onclose = function() {
+      // Reconnect after 3s
+      setTimeout(partyConnect, 3000);
+    };
+
+    _partySocket.onerror = function() {
+      _partySocket = null;
+    };
+  } catch(e) {
+    console.warn('[Nousflow] PartyKit not configured yet');
+  }
+}
+
+function partySend(msg) {
+  if (_partySocket && _partySocket.readyState === 1) {
+    _partySocket.send(JSON.stringify(msg));
+  }
+}
+
+function partyHandleMessage(msg) {
+  if (msg.type === 'sync_state') {
+    // Another device sent us current state on connect
+    if (msg.state.sessionRunning && msg.state.sessionData && !timerRunning) {
+      const sd = msg.state.sessionData;
+      // Calculate how long the session has been running
+      const elapsed = Math.floor((Date.now() - sd.startedAt) / 1000);
+      // Apply the active preset
+      const p = focusPresets.find(x => x.id === sd.preset);
+      if (p) applyPreset(sd.preset);
+      // Sync the timer state
+      isOpenEnded = sd.isOpenEnded;
+      elapsedSec = elapsed;
+      if (!sd.isOpenEnded) {
+        remSec = Math.max(0, totalSec - elapsed);
+      }
+      timerRunning = true;
+      // Update UI without starting a new interval
+      document.getElementById('sbadge').className = 'status-badge active';
+      document.getElementById('sbadge').textContent = 'ACTIVE (remote)';
+      const pbMain = document.getElementById('play-btn-main');
+      const pbSub = document.getElementById('play-btn-sub');
+      if (pbMain) pbMain.textContent = '🔒 Stop';
+      if (pbSub) pbSub.style.display = 'none';
+      updateDisplay();
+      syncBnStartBtn();
+      updateHomeDashboard();
+      showToast('📱 Session active on another device');
+    }
+    // Merge session history
+    if (msg.state.history && msg.state.history.length > 0) {
+      const localHist = getSessionHistory();
+      const localIds = new Set(localHist.map(s => s.id));
+      const newEntries = msg.state.history.filter(s => !localIds.has(s.id));
+      if (newEntries.length > 0) {
+        const merged = [...newEntries, ...localHist]
+          .sort((a,b) => (b.started||0) - (a.started||0))
+          .slice(0, 200);
+        localStorage.setItem('ff-session-history', JSON.stringify(merged));
+        if (typeof buildSessionsPage === 'function') buildSessionsPage();
+      }
+    }
+    return;
+  }
+
+  if (msg.type === 'session_start' && msg.deviceId !== _deviceId) {
+    // Another device started a session — show indicator
+    showToast('📱 Session started on another device');
+    const p = focusPresets.find(x => x.id === msg.preset);
+    if (p) applyPreset(msg.preset);
+    isOpenEnded = msg.isOpenEnded;
+    elapsedSec = 0;
+    timerRunning = true;
+    document.getElementById('sbadge').className = 'status-badge active';
+    document.getElementById('sbadge').textContent = 'ACTIVE (remote)';
+    const pbMain = document.getElementById('play-btn-main');
+    if (pbMain) pbMain.textContent = '🔒 Stop';
+    const pbSub = document.getElementById('play-btn-sub');
+    if (pbSub) pbSub.style.display = 'none';
+    syncBnStartBtn();
+    updateHomeDashboard();
+  }
+
+  if (msg.type === 'session_stop' && msg.deviceId !== _deviceId) {
+    if (timerRunning) {
+      showToast('✅ Session completed on another device');
+      clearInterval(timerIv);
+      timerRunning = false;
+      resetTimer();
+      // Save the session record locally too
+      const record = {
+        id: 's' + Date.now(),
+        preset: activePresetId,
+        name: (focusPresets.find(x=>x.id===activePresetId)||{name:'Focus session'}).name,
+        duration: msg.duration,
+        started: Date.now() - msg.duration * 1000,
+        completed: true,
+      };
+      const hist = getSessionHistory();
+      hist.unshift(record);
+      localStorage.setItem('ff-session-history', JSON.stringify(hist.slice(0,200)));
+      syncBnStartBtn();
+      updateHomeDashboard();
+      if (typeof buildSessionsPage === 'function') buildSessionsPage();
+    }
+  }
+
+  if (msg.type === 'session_tick' && msg.deviceId !== _deviceId && timerRunning) {
+    // Mirror the timer from the source device
+    if (!isOpenEnded) remSec = msg.remSec;
+    else elapsedSec = msg.elapsedSec;
+    updateDisplay();
+    syncBnStartBtn();
+  }
+}
+
+// ── PartyKit hooks — called from within existing functions ──
+let _partyTickCount = 0;
+function partyOnSessionStart() {
+  setTimeout(function() {
+    if (timerRunning) {
+      partySend({
+        type: 'session_start',
+        preset: activePresetId,
+        name: (focusPresets.find(x=>x.id===activePresetId)||{name:'Focus session'}).name,
+        isOpenEnded: isOpenEnded,
+        startedAt: Date.now() - (elapsedSec * 1000),
+        deviceId: _deviceId,
+      });
+    }
+  }, 100);
+}
+function partyOnSessionStop(duration) {
+  partySend({ type: 'session_stop', completedAt: Date.now(), duration: duration, deviceId: _deviceId });
+}
+function partyOnTick() {
+  _partyTickCount++;
+  if (_partyTickCount % 5 === 0 && timerRunning) {
+    partySend({ type: 'session_tick', remSec: remSec, elapsedSec: elapsedSec, deviceId: _deviceId });
+  }
+}
+
+// Show room ID in account page so user can share it
+function getShareCode() {
+  return getPartyRoomId().replace('room_', '').toUpperCase();
+}
+
+function copyShareCode() {
+  const code = getShareCode();
+  if (navigator.clipboard) navigator.clipboard.writeText(code);
+  showToast('✅ Code copied — paste on other device');
+}
+
+function joinRoom(code) {
+  if (!code || code.trim().length < 4) { showToast('Enter a valid code'); return; }
+  const clean = code.trim().toLowerCase();
+  const roomId = clean.startsWith('room_') ? clean : 'room_' + clean;
+  localStorage.setItem('ff-room-id', roomId);
+  if (_partySocket) { _partySocket.close(); _partySocket = null; }
+  setTimeout(partyConnect, 500);
+  showToast('🔗 Joining room — syncing…');
+}
+
+// Connect on load
+setTimeout(partyConnect, 1000);
 
 initTheme();
 switchTab('home');
