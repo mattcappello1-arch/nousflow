@@ -5458,6 +5458,9 @@ function buildAccountPage(){
   set('acct-total-time',totalMins>=60?Math.round(totalMins/60)+'h':totalMins+'m');
   const sub=document.getElementById('acct-unlock-sub');
   if(sub) sub.textContent=currentUnlock||'Mental maths';
+  const qrRow=document.getElementById('qr-settings-row');
+  if(qrRow) qrRow.style.display=(currentUnlock==='QR scan')?'':'none';
+  if(currentUnlock==='QR scan') renderQRSettings();
   const roomLabel=document.getElementById('sync-room-label');
   if(roomLabel) roomLabel.textContent='Active · tap to copy your room code';
   const codeDisplay=document.getElementById('sync-code-display');
@@ -6285,7 +6288,7 @@ function openQRPreScan(){
       <button class="modal-close" onclick="stopQRPreScan()">✕</button>
       <h2>📷 Scan to start</h2>
       <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">
-        Scan any QR code to begin your session. You'll need to find and scan the same code again to stop.
+        Scan your registered QR code to begin. If no code is registered yet, the first one you scan will be saved as your unlock code.
       </p>
       <div style="position:relative;background:#000;border-radius:12px;overflow:hidden;margin-bottom:10px;width:100%;aspect-ratio:1;max-height:240px;">
         <video id="qrps-video" style="width:100%;height:100%;object-fit:cover;" muted playsinline autoplay></video>
@@ -6348,13 +6351,27 @@ function tickQRPreScan(video, canvas, statusEl){
   if(typeof jsQR !== 'undefined'){
     var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts:'dontInvert' });
     if(code && code.data){
-      // Any QR code found — remember it and start session
-      _qrScannedCode  = code.data;
-      _qrPreScanDone  = true;
-      stopQRPreScan();
-      if(statusEl) statusEl.textContent = '✅ QR registered!';
-      // Small delay then start
-      setTimeout(function(){ toggleTimer(); }, 400);
+      var registered = getRegisteredQR();
+      if(!registered){
+        // First time — register this QR and start
+        registerQRCode(code.data);
+        _qrScannedCode = code.data;
+        _qrPreScanDone = true;
+        stopQRPreScan();
+        if(statusEl) statusEl.textContent = '✅ QR code registered!';
+        showToast('📷 QR code saved — use this same code to end sessions');
+        setTimeout(function(){ toggleTimer(); }, 500);
+      } else if(code.data === registered){
+        // Correct registered QR — start session
+        _qrScannedCode = code.data;
+        _qrPreScanDone = true;
+        stopQRPreScan();
+        if(statusEl) statusEl.textContent = '✅ QR code matched!';
+        setTimeout(function(){ toggleTimer(); }, 400);
+      } else {
+        // Wrong QR code
+        if(statusEl) statusEl.textContent = '❌ Wrong QR code — use your registered code';
+      }
       return;
     }
   }
