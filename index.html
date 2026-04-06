@@ -1622,10 +1622,193 @@ html, body {
   }
 }
 
+
+/* ── Nousflow Block Screen ── */
+#nousflow-block-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0f;
+  overflow: hidden;
+}
+#nousflow-block-screen.show {
+  display: flex;
+}
+
+/* Noise grain */
+#nousflow-block-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 180px;
+  pointer-events: none;
+}
+
+/* Radial glow behind logo */
+#nousflow-block-screen::after {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%);
+  pointer-events: none;
+  animation: blockGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes blockGlow {
+  from { transform: scale(0.9); opacity: 0.6; }
+  to   { transform: scale(1.15); opacity: 1; }
+}
+
+@keyframes blockFadeIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes blockPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+@keyframes waveFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+.block-logo-wrap {
+  position: relative;
+  z-index: 1;
+  animation: waveFloat 3s ease-in-out infinite;
+  margin-bottom: 36px;
+}
+
+.block-headline {
+  position: relative;
+  z-index: 1;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(22px, 6vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #f0f0f8;
+  text-align: center;
+  margin-bottom: 14px;
+  animation: blockFadeIn 0.8s 0.2s both;
+  line-height: 1.2;
+  padding: 0 24px;
+}
+
+.block-headline span {
+  background: linear-gradient(90deg, #6c63ff, #a78bfa, #00d48a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.block-sub {
+  position: relative;
+  z-index: 1;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(13px, 3.5vw, 16px);
+  color: #7878a0;
+  text-align: center;
+  margin-bottom: 52px;
+  animation: blockFadeIn 0.8s 0.4s both;
+  padding: 0 32px;
+  line-height: 1.6;
+}
+
+.block-timer {
+  position: relative;
+  z-index: 1;
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(44px, 12vw, 72px);
+  font-weight: 300;
+  letter-spacing: -2px;
+  color: #f0f0f8;
+  margin-bottom: 8px;
+  animation: blockFadeIn 0.8s 0.3s both;
+  animation: blockPulse 2s ease-in-out infinite;
+}
+
+.block-timer-label {
+  position: relative;
+  z-index: 1;
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #4a4a6a;
+  margin-bottom: 48px;
+  animation: blockFadeIn 0.8s 0.5s both;
+}
+
+.block-btn {
+  position: relative;
+  z-index: 1;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: 100px;
+  border: 1.5px solid rgba(108,99,255,0.5);
+  background: rgba(108,99,255,0.1);
+  color: #8b85ff;
+  cursor: pointer;
+  transition: all 0.2s;
+  animation: blockFadeIn 0.8s 0.6s both;
+  letter-spacing: 0.3px;
+}
+.block-btn:hover, .block-btn:active {
+  background: rgba(108,99,255,0.2);
+  border-color: rgba(108,99,255,0.8);
+  color: #c4c0ff;
+  transform: scale(1.03);
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
+
+<!-- ════ NOUSFLOW BLOCK SCREEN ════ -->
+<div id="nousflow-block-screen">
+  <!-- Wave logo -->
+  <div class="block-logo-wrap">
+    <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+      <rect width="72" height="72" rx="18" fill="#0f0e1a"/>
+      <rect width="72" height="72" rx="18" fill="none" stroke="#6c63ff" stroke-width="1" opacity="0.4"/>
+      <defs>
+        <linearGradient id="bwg" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6c63ff"/>
+          <stop offset="55%" stop-color="#a78bfa"/>
+          <stop offset="100%" stop-color="#00d48a"/>
+        </linearGradient>
+      </defs>
+      <path d="M10 50 C20 42,28 54,36 50 C44 42,54 48,62 44" fill="none" stroke="url(#bwg)" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+      <path d="M10 38 C20 28,28 42,36 38 C44 28,54 35,62 30" fill="none" stroke="url(#bwg)" stroke-width="3.5" stroke-linecap="round" opacity="0.65"/>
+      <path d="M10 26 C20 14,28 30,36 26 C44 14,54 22,62 17" fill="none" stroke="url(#bwg)" stroke-width="4" stroke-linecap="round" opacity="1"/>
+      <circle cx="36" cy="25" r="3" fill="#a78bfa"/>
+    </svg>
+  </div>
+
+  <div class="block-headline">You are blocked by<br><span>Nousflow</span></div>
+  <div class="block-sub">Keep your mind in flow state.<br>Your session is still active.</div>
+
+  <!-- Live timer mirror -->
+  <div class="block-timer" id="block-timer-display">25:00</div>
+  <div class="block-timer-label">remaining in session</div>
+
+  <!-- Close / go back button -->
+  <button class="block-btn" onclick="closeBlockScreen()">← Back to session</button>
+</div>
+
 
 <div id="splash-overlay">
   <div id="splash-logo">
@@ -2434,6 +2617,16 @@ html, body {
           </div>
         </div>
 
+        <!-- DNS Profile install -->
+        <div class="acct-row" onclick="">
+          <div class="acct-icon" style="background:rgba(0,212,138,0.12);">🛡</div>
+          <div class="acct-info">
+            <div class="acct-title">iPhone real blocking</div>
+            <div class="acct-sub" id="dns-install-status">Checking…</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="dns-install-btn" onclick="installDNSProfile()" style="flex-shrink:0;display:none;">Install</button>
+        </div>
+
         <div class="acct-row" onclick="shareApp()">
           <div class="acct-icon" style="background:rgba(108,99,255,0.08);">↗</div>
           <div class="acct-info">
@@ -3177,6 +3370,14 @@ function toggleTimer(){
     _qrPreScanDone = false; // reset for next session
     // START
     timerRunning=true;
+    // Save start time for background resume
+    localStorage.setItem('ff-session-start', Date.now());
+    localStorage.setItem('ff-session-total', totalSec);
+    localStorage.setItem('ff-session-open', isOpenEnded ? '1' : '0');
+    // Save start time so background resume can recalculate elapsed
+    localStorage.setItem('ff-session-starttime', Date.now());
+    localStorage.setItem('ff-session-remsec', remSec);
+    localStorage.setItem('ff-session-openended', isOpenEnded ? '1' : '0');
     const _pbM=document.getElementById('play-btn-main');const _pbS=document.getElementById('play-btn-sub');
     if(_pbM)_pbM.textContent='🔒 Stop';if(_pbS)_pbS.style.display='none';
     document.getElementById('play-btn').title='Must complete unlock challenge to stop';
@@ -3192,6 +3393,7 @@ function toggleTimer(){
     updateSessionWarnings();
     updateHomeDashboard();
     if(typeof partyOnSessionStart==='function') partyOnSessionStart();
+    syncBlockingToSW();
     if(isOpenEnded){
       document.getElementById('open-arc').classList.add('spinning');
       // Show dedicated stop button, fade pills
@@ -3203,7 +3405,10 @@ function toggleTimer(){
       timerIv=setInterval(()=>{
         remSec--;updateDisplay();syncBnStartBtn();if(typeof partyOnTick==='function')partyOnTick();
         if(remSec<=0){
-          clearInterval(timerIv);timerRunning=false;remSec=0;
+          clearInterval(timerIv);timerRunning=false;
+  localStorage.removeItem('ff-session-starttime');
+  localStorage.removeItem('ff-session-remsec');
+  localStorage.removeItem('ff-session-openended');remSec=0;
           const _pbMD=document.getElementById('play-btn-main');if(_pbMD)_pbMD.textContent='Done!';
           document.getElementById('play-btn').title='';
           document.getElementById('sbadge').className='status-badge break';
@@ -3228,6 +3433,9 @@ function resetTimer(){
     return;
   }
   clearInterval(timerIv);timerRunning=false;
+  localStorage.removeItem('ff-session-starttime');
+  localStorage.removeItem('ff-session-remsec');
+  localStorage.removeItem('ff-session-openended');
   if(isOpenEnded){
     const arc=document.getElementById('open-arc');
     if(arc) arc.classList.remove('spinning');
@@ -3835,6 +4043,10 @@ function unlockSuccess(){
   clearInterval(breathIv);clearInterval(stepIv);clearInterval(cooldownIv);
   if(typeof stopNFCScan==='function') stopNFCScan();
   closeModal('challenge-modal');
+  // Clear session resume data
+  localStorage.removeItem('ff-session-start');
+  localStorage.removeItem('ff-session-total');
+  localStorage.removeItem('ff-session-open');
   // NOW actually stop the timer
   clearInterval(timerIv);
   if(isOpenEnded) document.getElementById('open-arc').classList.remove('spinning');
@@ -3852,6 +4064,7 @@ function unlockSuccess(){
   updateSessionWarnings();
   updateHomeDashboard();
   if(typeof syncBnStartBtn==='function') syncBnStartBtn();
+  syncBlockingToSW();
   if(typeof partyOnSessionStop==='function') partyOnSessionStop(isOpenEnded?elapsedSec:totalSec-remSec);
   if(wasOpenEnded){
     resetTimer();
@@ -5249,6 +5462,7 @@ function buildAccountPage(){
   if(roomLabel) roomLabel.textContent='Active · tap to copy your room code';
   const codeDisplay=document.getElementById('sync-code-display');
   if(codeDisplay) codeDisplay.textContent=getShareCode();
+  if(typeof checkDNSProfileInstalled==='function') checkDNSProfileInstalled();
 }
 
 // ── Profile ──
@@ -6370,11 +6584,16 @@ function partyOnSessionStart() {
         startedAt: Date.now() - (elapsedSec * 1000),
         deviceId: _deviceId,
       });
+      // DNS blocking for iPhone
+      const domains = getBlockDomainsFromPreset(activePresetId);
+      if (domains.length > 0) dnsBlockStart(domains);
     }
   }, 100);
 }
 function partyOnSessionStop(duration) {
   partySend({ type: 'session_stop', completedAt: Date.now(), duration: duration, deviceId: _deviceId });
+  // Remove DNS blocking
+  dnsBlockStop();
 }
 function partyOnTick() {
   _partyTickCount++;
@@ -6407,6 +6626,488 @@ function joinRoom(code) {
 // Connect on load
 setTimeout(partyConnect, 1000);
 
+// ── Cold start session restore ──
+// If the app was killed mid-session, restore the timer state
+function checkSessionRestore() {
+  const startTime = parseInt(localStorage.getItem('ff-session-starttime') || '0');
+  const savedRemSec = parseInt(localStorage.getItem('ff-session-remsec') || '0');
+  const wasOpenEnded = localStorage.getItem('ff-session-openended') === '1';
+
+  if (!startTime || !savedRemSec && !wasOpenEnded) return;
+
+  const elapsedWall = Math.floor((Date.now() - startTime) / 1000);
+
+  if (!wasOpenEnded && elapsedWall >= savedRemSec) {
+    // Session already completed while app was closed — clear and show complete
+    localStorage.removeItem('ff-session-starttime');
+    localStorage.removeItem('ff-session-remsec');
+    localStorage.removeItem('ff-session-openended');
+    return;
+  }
+
+  // Restore running session
+  isOpenEnded = wasOpenEnded;
+  if (wasOpenEnded) {
+    elapsedSec = elapsedWall;
+  } else {
+    remSec = Math.max(0, savedRemSec - elapsedWall);
+  }
+  timerRunning = true;
+
+  // Update UI
+  document.getElementById('sbadge').className = 'status-badge active';
+  document.getElementById('sbadge').textContent = 'ACTIVE';
+  const pbM = document.getElementById('play-btn-main');
+  const pbS = document.getElementById('play-btn-sub');
+  if (pbM) pbM.textContent = '🔒 Stop';
+  if (pbS) pbS.style.display = 'none';
+
+  if (isOpenEnded) {
+    document.getElementById('ring-timed').style.display = 'none';
+    document.getElementById('ring-open').style.display = '';
+    document.getElementById('open-arc').classList.add('spinning');
+    document.getElementById('open-stop-btn').style.display = 'block';
+    timerIv = setInterval(function() {
+      elapsedSec++; updateDisplay(); syncBnStartBtn();
+      if (typeof partyOnTick === 'function') partyOnTick();
+      updateHomeDashboard();
+    }, 1000);
+  } else {
+    timerIv = setInterval(function() {
+      remSec--; updateDisplay(); syncBnStartBtn();
+      if (typeof partyOnTick === 'function') partyOnTick();
+      if (remSec <= 0) {
+        clearInterval(timerIv); timerRunning = false; remSec = 0;
+        localStorage.removeItem('ff-session-starttime');
+        localStorage.removeItem('ff-session-remsec');
+        localStorage.removeItem('ff-session-openended');
+        document.getElementById('play-btn-main') && (document.getElementById('play-btn-main').textContent = 'Done!');
+        document.getElementById('sbadge').className = 'status-badge break';
+        document.getElementById('sbadge').textContent = 'COMPLETE';
+        updateHomeDashboard();
+        setTimeout(openExitRitual, 600);
+      }
+      updateDisplay(); updateHomeDashboard();
+    }, 1000);
+  }
+
+  updateDisplay();
+  syncBnStartBtn();
+  updateHomeDashboard();
+  showToast('⏱ Session restored');
+}
+
+// ── Background resume fix ──
+// When iOS brings the app back from background, recalculate timer from wall clock
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState !== 'visible') return;
+  if (!timerRunning) return;
+
+  const startTime = parseInt(localStorage.getItem('ff-session-starttime') || '0');
+  const savedRemSec = parseInt(localStorage.getItem('ff-session-remsec') || '0');
+  const wasOpenEnded = localStorage.getItem('ff-session-openended') === '1';
+
+  if (!startTime) return;
+
+  const elapsedWall = Math.floor((Date.now() - startTime) / 1000);
+
+  if (wasOpenEnded) {
+    // Open ended — just set elapsed to wall clock time
+    elapsedSec = elapsedWall;
+  } else {
+    // Timed session — subtract elapsed from original remSec
+    const newRemSec = Math.max(0, savedRemSec - elapsedWall);
+    remSec = newRemSec;
+    if (remSec <= 0) {
+      // Session completed while in background
+      clearInterval(timerIv);
+      timerRunning = false;
+      localStorage.removeItem('ff-session-starttime');
+      localStorage.removeItem('ff-session-remsec');
+      localStorage.removeItem('ff-session-openended');
+      document.getElementById('play-btn-main') && (document.getElementById('play-btn-main').textContent = 'Done!');
+      document.getElementById('sbadge').className = 'status-badge break';
+      document.getElementById('sbadge').textContent = 'COMPLETE';
+      updateDisplay();
+      syncBnStartBtn();
+      updateHomeDashboard();
+      setTimeout(openExitRitual, 600);
+      return;
+    }
+  }
+
+  updateDisplay();
+  syncBnStartBtn();
+  updateHomeDashboard();
+});
+
+// ── Restore session if app was closed mid-session ──
+function restoreActiveSession(){
+  const startTime = parseInt(localStorage.getItem('ff-session-start') || '0');
+  if(!startTime || timerRunning) return;
+  const openEnded = localStorage.getItem('ff-session-open') === '1';
+  const totalSeconds = parseInt(localStorage.getItem('ff-session-total') || '1500');
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  // Only restore if started less than 24 hours ago
+  if(elapsed > 86400){
+    localStorage.removeItem('ff-session-start');
+    return;
+  }
+  // Restore timer state
+  isOpenEnded = openEnded;
+  totalSec = totalSeconds;
+  if(openEnded){
+    elapsedSec = elapsed;
+  } else {
+    remSec = Math.max(0, totalSeconds - elapsed);
+    if(remSec <= 0){
+      localStorage.removeItem('ff-session-start');
+      return;
+    }
+  }
+  timerRunning = true;
+  // Restart the interval
+  const _pbM=document.getElementById('play-btn-main');
+  const _pbS=document.getElementById('play-btn-sub');
+  if(_pbM) _pbM.textContent='🔒 Stop';
+  if(_pbS) _pbS.style.display='none';
+  document.getElementById('sbadge').className='status-badge active';
+  document.getElementById('sbadge').textContent='ACTIVE';
+  if(isOpenEnded){
+    document.getElementById('ring-timed').style.display='none';
+    document.getElementById('ring-open').style.display='';
+    document.getElementById('open-arc').classList.add('spinning');
+    document.getElementById('open-stop-btn').style.display='block';
+    timerIv=setInterval(()=>{elapsedSec++;updateDisplay();syncBnStartBtn();if(typeof partyOnTick==='function')partyOnTick();updateHomeDashboard();},1000);
+  } else {
+    timerIv=setInterval(()=>{
+      remSec--;updateDisplay();syncBnStartBtn();if(typeof partyOnTick==='function')partyOnTick();
+      if(remSec<=0){
+        clearInterval(timerIv);timerRunning=false;remSec=0;
+        localStorage.removeItem('ff-session-start');
+        document.getElementById('sbadge').className='status-badge break';
+        document.getElementById('sbadge').textContent='COMPLETE';
+        updateHomeDashboard();
+        setTimeout(openExitRitual,600);
+      }
+      updateDisplay();updateHomeDashboard();
+    },1000);
+  }
+  updateDisplay();
+  syncBnStartBtn();
+  updateHomeDashboard();
+  showToast('⏱ Session restored');
+}
+
+// ── Background resume: recalculate timer from real clock ──
+function resumeTimerFromClock(){
+  if(!timerRunning) return;
+  const startTime = parseInt(localStorage.getItem('ff-session-start') || '0');
+  if(!startTime) return;
+  const openEnded = localStorage.getItem('ff-session-open') === '1';
+  const totalSeconds = parseInt(localStorage.getItem('ff-session-total') || String(totalSec));
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  if(openEnded){
+    elapsedSec = elapsed;
+  } else {
+    remSec = Math.max(0, totalSeconds - elapsed);
+    // Check if session completed while in background
+    if(remSec <= 0){
+      clearInterval(timerIv);
+      timerRunning = false;
+      remSec = 0;
+      localStorage.removeItem('ff-session-start');
+      document.getElementById('sbadge').className='status-badge break';
+      document.getElementById('sbadge').textContent='COMPLETE';
+      updateDisplay();
+      syncBnStartBtn();
+      updateHomeDashboard();
+      setTimeout(openExitRitual, 600);
+      return;
+    }
+  }
+  updateDisplay();
+  syncBnStartBtn();
+  updateHomeDashboard();
+}
+
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible'){
+    resumeTimerFromClock();
+  }
+});
+
+// Also handle iOS PWA focus event
+window.addEventListener('focus', resumeTimerFromClock);
+window.addEventListener('pageshow', resumeTimerFromClock);
+
+// ══════════════════════════════════════════
+// ── ELECTRON MAC BRIDGE ──
+// ══════════════════════════════════════════
+(function(){
+  if (!window.electronAPI) return; // only runs inside Electron
+
+  // Pass room ID to main process so it can connect PartyKit
+  const roomId = localStorage.getItem('ff-room-id');
+  if (roomId) window.electronAPI.setRoomId(roomId);
+
+  // Listen for room ID changes (e.g. after joining a room)
+  const origJoinRoom = window.joinRoom;
+  if (origJoinRoom) {
+    window.joinRoom = function(code) {
+      origJoinRoom(code);
+      setTimeout(() => {
+        const newId = localStorage.getItem('ff-room-id');
+        if (newId) window.electronAPI.setRoomId(newId);
+      }, 600);
+    };
+  }
+
+  // Listen for PartyKit messages forwarded from the main process
+  window.electronAPI.onPartyMessage(function(msg) {
+    if (typeof partyHandleMessage === 'function') {
+      partyHandleMessage(msg);
+    }
+  });
+
+  // Hook session start — also trigger Mac blocking
+  const _partyOnSessionStart_orig = window.partyOnSessionStart;
+  window.partyOnSessionStart = function() {
+    if (_partyOnSessionStart_orig) _partyOnSessionStart_orig();
+    // Tell Mac app to block
+    const p = focusPresets ? focusPresets.find(x => x.id === activePresetId) : null;
+    const domains = p ? [...(p.blockedUrls || []), ...extractDomains(p.blockedApps || [])] : [];
+    if (domains.length > 0) {
+      window.electronAPI.startBlocking(domains).then(ok => {
+        if (ok) console.log('[Electron] Mac blocking active');
+      });
+    }
+  };
+
+  // Hook session stop — remove Mac blocking
+  const _partyOnSessionStop_orig = window.partyOnSessionStop;
+  window.partyOnSessionStop = function(duration) {
+    if (_partyOnSessionStop_orig) _partyOnSessionStop_orig(duration);
+    window.electronAPI.stopBlocking().then(ok => {
+      if (ok) console.log('[Electron] Mac blocking removed');
+    });
+  };
+
+  function extractDomains(appNames) {
+    const appDomainMap = {
+      'Instagram': 'instagram.com', 'Twitter / X': 'twitter.com', 'TikTok': 'tiktok.com',
+      'Reddit': 'reddit.com', 'YouTube': 'youtube.com', 'Netflix': 'netflix.com',
+      'Facebook': 'facebook.com', 'Discord': 'discord.com', 'Amazon': 'amazon.com',
+      'Twitch': 'twitch.tv', 'LinkedIn': 'linkedin.com', 'Snapchat': 'snapchat.com',
+    };
+    return appNames.map(n => appDomainMap[n]).filter(Boolean);
+  }
+
+  console.log('[Nousflow] Electron bridge active');
+})();
+
+// ── Nousflow Block Screen ──
+var _blockTimerIv = null;
+
+function showBlockScreen() {
+  const screen = document.getElementById('nousflow-block-screen');
+  if (!screen) return;
+  screen.classList.add('show');
+  updateBlockTimer();
+  _blockTimerIv = setInterval(updateBlockTimer, 1000);
+}
+
+function updateBlockTimer() {
+  const el = document.getElementById('block-timer-display');
+  if (!el) return;
+  if (!timerRunning) { closeBlockScreen(); return; }
+  if (isOpenEnded) {
+    el.textContent = fmtElapsed(elapsedSec);
+    const label = document.querySelector('.block-timer-label');
+    if (label) label.textContent = 'elapsed in session';
+  } else {
+    const m = Math.floor(remSec / 60);
+    const s = remSec % 60;
+    el.textContent = pad(m) + ':' + pad(s);
+  }
+}
+
+function closeBlockScreen() {
+  const screen = document.getElementById('nousflow-block-screen');
+  if (screen) screen.classList.remove('show');
+  clearInterval(_blockTimerIv);
+  _blockTimerIv = null;
+}
+
+// ══════════════════════════════════════════
+// ── NOUSFLOW DNS BLOCKER ──
+// ══════════════════════════════════════════
+
+// Replace with your deployed Cloudflare Worker URL after deployment
+const DNS_WORKER_URL = 'https://nousflow-dns.YOUR_SUBDOMAIN.workers.dev';
+
+function getDNSRoomId() {
+  return localStorage.getItem('ff-room-id') || '';
+}
+
+// Update DNS block list when session starts
+function dnsBlockStart(domains) {
+  const roomId = getDNSRoomId();
+  if (!roomId || !DNS_WORKER_URL.includes('workers.dev')) return;
+  fetch(DNS_WORKER_URL + '/blocklist', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Room-ID': roomId,
+    },
+    body: JSON.stringify({ active: true, domains: domains }),
+  }).then(r => r.json()).then(d => {
+    if (d.ok) console.log('[DNS] Blocking', d.domains, 'domains on iPhone');
+  }).catch(e => console.warn('[DNS] Block start failed:', e));
+}
+
+// Remove DNS blocking when session ends
+function dnsBlockStop() {
+  const roomId = getDNSRoomId();
+  if (!roomId || !DNS_WORKER_URL.includes('workers.dev')) return;
+  fetch(DNS_WORKER_URL + '/blocklist', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Room-ID': roomId,
+    },
+    body: JSON.stringify({ active: false, domains: [] }),
+  }).then(r => r.json()).then(d => {
+    if (d.ok) console.log('[DNS] Blocking removed');
+  }).catch(e => console.warn('[DNS] Block stop failed:', e));
+}
+
+// Get domains from current preset
+function getBlockDomainsFromPreset(presetId) {
+  const p = focusPresets ? focusPresets.find(x => x.id === presetId) : null;
+  if (!p) return [];
+  const urlDomains = (p.blockedUrls || []).map(u =>
+    u.replace(/^https?:\/\//, '').split('/')[0].trim()
+  );
+  const appDomainMap = {
+    'Instagram': 'instagram.com',
+    'Twitter / X': 'twitter.com',
+    'TikTok': 'tiktok.com',
+    'Reddit': 'reddit.com',
+    'YouTube': 'youtube.com',
+    'Netflix': 'netflix.com',
+    'Facebook': 'facebook.com',
+    'Discord': 'discord.com',
+    'Amazon': 'amazon.com',
+    'Twitch': 'twitch.tv',
+    'LinkedIn': 'linkedin.com',
+    'Snapchat': 'snapchat.com',
+    'Pinterest': 'pinterest.com',
+    'All Games': 'steampowered.com',
+  };
+  const appDomains = (p.blockedApps || []).map(n => appDomainMap[n]).filter(Boolean);
+  return [...new Set([...urlDomains, ...appDomains])];
+}
+
+// Show install prompt in Account tab if profile not installed
+function checkDNSProfileInstalled() {
+  const installed = localStorage.getItem('ff-dns-profile-installed');
+  const btn = document.getElementById('dns-install-btn');
+  const status = document.getElementById('dns-install-status');
+  if (!btn || !status) return;
+  if (installed) {
+    status.textContent = '✅ DNS profile installed — real blocking active';
+    status.style.color = 'var(--green)';
+    btn.style.display = 'none';
+  } else {
+    status.textContent = 'Not installed — tap to enable real blocking on iPhone';
+    status.style.color = 'var(--text3)';
+    btn.style.display = '';
+  }
+}
+
+function installDNSProfile() {
+  const roomId = getDNSRoomId();
+  if (!roomId) { showToast('No room ID — go to Account and set up sync first'); return; }
+  const profileUrl = DNS_WORKER_URL + '/install/' + roomId;
+  // Open the profile URL — iOS will prompt to install
+  window.location.href = profileUrl;
+  // Mark as installed after redirect (user confirms in Settings)
+  setTimeout(() => {
+    localStorage.setItem('ff-dns-profile-installed', '1');
+    checkDNSProfileInstalled();
+    showToast('📱 Follow the prompts in Settings to complete install');
+  }, 1500);
+}
+
+// ── App domain map for URL blocking ──
+const APP_DOMAIN_MAP = {
+  'instagram':  ['instagram.com','www.instagram.com'],
+  'twitter':    ['twitter.com','www.twitter.com','x.com','www.x.com'],
+  'tiktok':     ['tiktok.com','www.tiktok.com'],
+  'reddit':     ['reddit.com','www.reddit.com','old.reddit.com'],
+  'youtube':    ['youtube.com','www.youtube.com','youtu.be','m.youtube.com'],
+  'netflix':    ['netflix.com','www.netflix.com'],
+  'amazon':     ['amazon.com','www.amazon.com','amazon.co.uk','www.amazon.co.uk'],
+  'discord':    ['discord.com','www.discord.com','discordapp.com'],
+  'slack':      ['slack.com','www.slack.com','app.slack.com'],
+  'news':       ['news.apple.com'],
+  'games':      ['miniclip.com','poki.com','crazygames.com','games.com'],
+};
+
+// Get the current list of blocked domains based on active blocked apps + preset blocked URLs
+function getBlockedDomains() {
+  const domains = new Set();
+  // From blocked apps
+  appData.filter(a => a.blocked).forEach(a => {
+    const appDomains = APP_DOMAIN_MAP[a.id] || [];
+    appDomains.forEach(d => domains.add(d));
+  });
+  // From preset blocked URLs
+  const preset = focusPresets.find(p => p.id === activePresetId);
+  if (preset && preset.blockedUrls) {
+    preset.blockedUrls.forEach(u => {
+      // Extract domain from URL
+      const domain = u.replace(/^https?:\/\//, '').split('/')[0];
+      domains.add(domain);
+    });
+  }
+  return Array.from(domains);
+}
+
+// Get allowed domains
+function getAllowedDomains() {
+  const domains = new Set();
+  allowData.urls.forEach(u => {
+    const domain = u.url.replace(/^https?:\/\//, '').split('/')[0];
+    domains.add(domain);
+  });
+  return Array.from(domains);
+}
+
+// Push blocking rules to Service Worker when session starts/stops
+function syncBlockingToSW() {
+  if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+  const blocked = timerRunning ? getBlockedDomains() : [];
+  const allowed = getAllowedDomains();
+  navigator.serviceWorker.controller.postMessage({
+    type: 'UPDATE_BLOCKING',
+    blocked: blocked,
+    allowed: allowed,
+    sessionActive: timerRunning,
+  });
+}
+
+// Listen for block events from SW
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'BLOCKED_NAVIGATION') {
+      // Show the block screen overlay
+      showBlockScreen(e.data.url);
+    }
+  });
+}
+
 initTheme();
 switchTab('home');
 updateHomeDashboard();
@@ -6414,6 +7115,8 @@ setTimeout(()=>{if(typeof syncBnStartBtn==="function")syncBnStartBtn();},50);
 setTimeout(()=>{if(typeof syncDesktop==="function")syncDesktop();},80);
 setTimeout(()=>{
   loadFromStorage(); updateLiveStats(); checkEmptyStates();
+  restoreActiveSession();
+  checkSessionRestore();
   startScheduleEngine(); startRiskUpdates();
   buildScorePage(); buildFullReviewPage(); buildHabitsPage();
   buildEnergyPage(); buildStatsPage(); buildAIPage(); buildAccountPage();
